@@ -82,6 +82,15 @@ describe('getUser', () => {
 
 ```
 
+# Task list
+
+- [x] Function mockAction
+- [ ] Function mockThrowError
+- [ ] Set param store default = { state: {}, getter: {} }
+- [x] Example usage mockAction
+- [ ] Example usage mockThrowError
+- [ ] Testing
+
 # 🤝 Contributing
 1. Fork this repository.
 2. Create new branch with feature name.
