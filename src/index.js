@@ -3,7 +3,7 @@
 const mockAction = async (action, payload, store, expectedMutations, expectedDispatchs) => {
   let countMutation = 0
   let countDispatch = 0
-  // mock commit
+  // Mock commit
   const commit = async (type, payload) => {
     try {
       if (expectedMutations.length !== 0) {
@@ -18,7 +18,7 @@ const mockAction = async (action, payload, store, expectedMutations, expectedDis
       console.error(`[COMMIT ERROR] ACTION : ${action.name} \n ${e}`)
     }
   }
-  // mock dispatch
+  // Mock dispatch
   const dispatch = (type, payload) => {
     try {
       if (expectedDispatchs.length !== 0) {
@@ -34,14 +34,14 @@ const mockAction = async (action, payload, store, expectedMutations, expectedDis
     }
   }
 
-  // call the action with mocked store and arguments
+  // Call the action with mocked store and arguments
   let result
   try {
     result = await action({ commit, dispatch, ...store }, payload)
   } catch (e) {
     console.error(`[ACTION ERROR] : ${action.name} \n ${e}`)
   }
-  // check if no mutations should have been dispatched
+  // If not have mutations should have been dispatched 
   if (expectedMutations.length === 0) {
     expect(countMutation).toEqual(0)
   } else {
@@ -52,7 +52,7 @@ const mockAction = async (action, payload, store, expectedMutations, expectedDis
   } else {
     expect(countDispatch).toEqual(expectedDispatchs.length)
   }
-  // check if has result should return result
+  // If action return data.
   if (result !== undefined) {
     return result
   }
