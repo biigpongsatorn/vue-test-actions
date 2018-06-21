@@ -1,6 +1,6 @@
 /* global expect */
 
-const mockAction = async (action, payload, store, expectedMutations, expectedDispatchs) => {
+const mockAction = async (action, payload, expectedMutations, expectedDispatchs, store) => {
   let countMutation = 0
   let countDispatch = 0
   // Mock commit
