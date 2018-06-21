@@ -18,6 +18,7 @@ const mockAction = async (action, payload, expectedMutations, expectedDispatchs,
       console.error(`[COMMIT ERROR] ACTION : ${action.name} \n ${e}`)
     }
   }
+  
   // Mock dispatch
   const dispatch = (type, payload) => {
     try {
