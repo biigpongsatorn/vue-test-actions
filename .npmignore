@@ -1,7 +1,7 @@
+node_modules/
+src/index.js
+.babelrc
 .gitignore
 .npmignore
 LICENSE
 README.md
-
-src/index.js
-index.html
