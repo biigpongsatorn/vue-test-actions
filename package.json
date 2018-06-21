@@ -1,0 +1,27 @@
+{
+  "name": "vue-test-actions",
+  "version": "1.0.0",
+  "description": "✅ Unit testing Vuex actions with Jest mocks.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/biigpongsatorn/vue-test-actions.git"
+  },
+  "keywords": [
+    "testing",
+    "test",
+    "vuex",
+    "actions",
+    "jets",
+    "mock"
+  ],
+  "author": "biig_pongsatorn <biig_pongsatorn@hotmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/biigpongsatorn/vue-test-actions/issues"
+  },
+  "homepage": "https://github.com/biigpongsatorn/vue-test-actions#readme"
+}
