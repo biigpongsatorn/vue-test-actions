@@ -2,3 +2,6 @@
 .npmignore
 LICENSE
 README.md
+
+index.js
+index.html
