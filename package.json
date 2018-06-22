@@ -1,6 +1,6 @@
 {
   "name": "vue-test-actions",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "✅ Unit testing Vuex actions with Jest mocks.",
   "main": "build/index.js",
   "scripts": {
