@@ -1,6 +1,6 @@
 /* global expect */
 
-const testAction = async (action, expectedMutations, expectedDispatchs, actionPayload = undefined, store = { state: {}, getter: {} }) => {
+const testAction = async (action, expectedMutations = [], expectedDispatchs = [], actionPayload = undefined, store = { state: {}, getter: {} }) => {
   let countMutation = 0
   let countDispatch = 0
 
