@@ -1,6 +1,6 @@
 /* global expect */
 
-const testAction = async (action, expectedMutations, expectedDispatchs, payload = undefined, store = { state: {}, getter: {} }) => {
+const testAction = async (action, expectedMutations, expectedDispatchs, actionPayload = undefined, store = { state: {}, getter: {} }) => {
   let countMutation = 0
   let countDispatch = 0
   // Mock commit
@@ -38,7 +38,7 @@ const testAction = async (action, expectedMutations, expectedDispatchs, payload 
   // Call the action with mocked store and arguments
   let result
   try {
-    result = await action({ commit, dispatch, ...store }, payload)
+    result = await action({ commit, dispatch, ...store }, actionPayload)
   } catch (e) {
     console.error(`[ACTION ERROR] : ${action.name} \n ${e}`)
   }
