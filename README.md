@@ -1,11 +1,5 @@
-<p>
-<a href="https://npmjs.com/package/vue-test-actions"><img src="https://img.shields.io/npm/v/vue-test-actions.svg?style=flat" alt="NPM version"></a>
-<a href="https://npmjs.com/package/vue-test-actions"><img src="https://img.shields.io/npm/dm/vue-test-actions.svg?style=flat" alt="NPM downloads"></a>
-<a href="https://www.npmjs.com/package/vue-test-actions"><img src="https://img.shields.io/npm/l/vue-test-actions.svg?style=flat" alt="License"></a>
-<a href="https://biigpongsatorn.github.io/#/vue-test-actions"><img src="https://travis-ci.org/biigpongsatorn/biigpongsatorn.github.io.svg?branch=dev" alt="build status"></a>
-</p>
-
-# ✅ Vue Test Actions
+# ✅ Vue Test Actions <a href="https://biigpongsatorn.github.io/#/vue-test-actions"><img src="https://travis-ci.org/biigpongsatorn/biigpongsatorn.github.io.svg?branch=dev" alt="build status"></a>
+<a href="https://npmjs.com/package/vue-test-actions"><img src="https://img.shields.io/npm/v/vue-test-actions.svg?style=flat" alt="NPM version"></a> <a href="https://npmjs.com/package/vue-test-actions"><img src="https://img.shields.io/npm/dm/vue-test-actions.svg?style=flat" alt="NPM downloads"></a> <a href="https://www.npmjs.com/package/vue-test-actions"><img src="https://img.shields.io/npm/l/vue-test-actions.svg?style=flat" alt="License"></a>
 
 Unit testing Vuex actions with Jest mocks.
 
@@ -82,23 +76,13 @@ describe('getUser', () => {
 
 ```
 
-# Task list
-
-- [x] Function mockAction
-- [ ] Function mockThrowError
-- [ ] Set param store default = { state: {}, getter: {} }
-- [x] Example usage mockAction
-- [ ] Example usage mockThrowError
-- [ ] Testing
-
 # 🤝 Contributing
 1. Fork this repository.
 2. Create new branch with feature name.
-3. Run `npm install` and `npm run dev`.
-4. Create your feature.
-5. Commit and set commit message with feature name.
-6. Push your code to your fork repository.
-7. Create pull request. 🙂
+3. Create your feature.
+4. Commit and set commit message with feature name.
+5. Push your code to your fork repository.
+6. Create pull request. 🙂
 
 # ⭐️ Support
 
