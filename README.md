@@ -18,7 +18,7 @@ yarn add vue-test-actions
 ```javascript
 import testAction from 'vue-test-actions'
 
-testAction(action, payload, expectedCommits, expectedDispatchs, store)
+testAction(action, expectedCommits, expectedDispatchs, payload, store)
 ```
 
 # ⚙️ Params
@@ -70,7 +70,7 @@ describe('getUser', () => {
     const expectedDispatchs = [
       { type: 'getUserPermission', payload: 1 }
     ]
-    testAction(actions.getUser, payload, expectedCommits, expectedDispatchs)
+    testAction(actions.getUser, expectedCommits, expectedDispatchs, payload)
   })
 })
 
