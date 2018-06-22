@@ -22,13 +22,13 @@ testAction(action, expectedCommits, expectedDispatchs, payload, store)
 ```
 
 # ⚙️ Params
-| Params            | Type          | Description                       |
-| ----------------- |:--------------| ----------------------------------|
-| action            | Function      | Action function                   |
-| payload           | Any           | Parameter send to action function |
-| expected commits  | Array         | Array of commit expectation       |
-| expected dispatchs| Array         | Array of dispatchs expectation    |
-| store             | Object        | Object for mock store data such as `state` or `getter` |
+| Params            | Type          | Default       | Description                       |
+| ----------------- |:--------------|:--------------| ----------------------------------|
+| action            | Function      | -             | Action function                   |
+| expected commits  | Array         | `[]`          | Array of commit expectation       |
+| expected dispatchs| Array         | `[]`          | Array of dispatchs expectation    |
+| payload           | Any           | `undefined`    | Parameter send to action function |
+| store             | Object        | `{ state: {}, getter: {} }`| Object for mock store data such as `state` or `getter` |
 
 
 # 🔎 Example
