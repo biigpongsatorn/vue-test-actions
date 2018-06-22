@@ -15,7 +15,7 @@ const testAction = async (action, expectedMutations, expectedDispatchs, actionPa
         }
       }
     } catch (e) {
-      console.error(`[COMMIT ERROR] ACTION : ${action.name} \n ${e}`)
+      console.error(`[COMMIT FAIL], [ACTION '${action.name}'], \n ${e}`)
     }
   }
   
@@ -31,7 +31,7 @@ const testAction = async (action, expectedMutations, expectedDispatchs, actionPa
         }
       }
     } catch (e) {
-      console.error(`[DISPATCH ERROR] ACTION : ${action.name} \n ${e}`)
+      console.error(`[DISPATCH FAIL], [ACTION '${action.name}'], \n ${e}`)
     }
   }
 
@@ -40,7 +40,7 @@ const testAction = async (action, expectedMutations, expectedDispatchs, actionPa
   try {
     result = await action({ commit, dispatch, ...store }, actionPayload)
   } catch (e) {
-    console.error(`[ACTION ERROR] : ${action.name} \n ${e}`)
+    console.error(`[ACTION '${action.name}' FAIL], \n ${e}`)
   }
   // If not have mutations should have been dispatched 
   if (expectedMutations.length === 0) {
