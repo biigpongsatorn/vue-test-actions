@@ -1,16 +1,57 @@
-import { MutationPayload, ActionPayload, Action } from "vuex";
+import {
+    MutationPayload,
+    ActionPayload,
+    Action,
+    DispatchOptions,
+    CommitOptions,
+    StoreOptions,
+    Payload
+} from "vuex";
 
-interface ExpectedMutations extends Array<MutationPayload> { }
+interface Expectation {
+    t: Trigger;
+    checkUsing?: void;
+    callback?: void
+}
 
-interface ExpectedDispatchs extends Array<ActionPayload> { }
+declare const TRIGGER_TYPE_MUTATION = 'mutation';
+declare const TRIGGER_TYPE_DISPATCH = 'dispatch';
+
+declare function CHECK_FUNCTION_toEqual(
+    type: string,
+    received: Trigger,
+    expected: Trigger,
+    store: StoreOptions<Object>
+): () => Promise<any>
+
+declare function CHECK_FUNCTION_toEqual_permissive(
+    type: string,
+    received: Trigger,
+    expected: Trigger,
+    store: StoreOptions<Object>
+): () => Promise<any>
+
+declare class Trigger {
+    type: string;
+    name: string;
+    payload?: any;
+    options?: CommitOptions|DispatchOptions;
+}
 
 declare function testAction(
     action: Action<any, any>,
-    expectedMutations: ExpectedMutations,
-    actionPayload: any,
-    store: any
-): () => Promise<any>;
+    expectations?: Array<Expectation>,
+    actionPayload?: ActionPayload|undefined,
+    store?: StoreOptions<Object>
+): () => Promise<any>
 
 declare namespace testAction { }
 
-export default testAction;
+export {
+    testAction,
+    CHECK_FUNCTION_toEqual,
+    CHECK_FUNCTION_toEqual_permissive,
+    TRIGGER_TYPE_MUTATION,
+    TRIGGER_TYPE_DISPATCH,
+    Trigger
+};
