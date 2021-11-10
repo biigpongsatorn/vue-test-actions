@@ -20,7 +20,15 @@ class Trigger {
    * @param {Object|undefined} [options] Options passed to the trigger
    */
   constructor(type, name, payload = undefined, options = undefined) {
+    if(type === null || type === undefined)
+      throw new Error('Cannot construct Trigger from empty input.');
+
     if(typeof type === 'object') {
+      // Check the user hasn't put check_function or callback in the wrong place
+      if(type.check_function)
+        throw new Error('Found "check_function" property of Trigger. The check_function is a property of the Expectation itself, not the Expectation\'s Trigger property (t)');
+      if(type.callback)
+        throw new Error('Found "callback" property of Trigger. The callback is a property of the Expectation itself, not the Expectation\'s Trigger property (t)');
       options = type.options;
       payload = type.payload;
       name = type.name;
@@ -30,11 +38,11 @@ class Trigger {
         type !== TRIGGER_TYPE_MUTATION &&
         type !== TRIGGER_TYPE_UNSET
     )
-      throw new Error(`store_trigger_name must be a valid TRIGGER_TYPE_* constant (received "${type}")`);
+      throw new Error(`Trigger type must be a valid TRIGGER_TYPE_* constant (received "${type}")`);
     if(typeof name !== 'string')
-      throw new TypeError('name must be a string');
+      throw new TypeError('Trigger name must be a string');
     if(options && typeof options !== 'object')
-      throw new TypeError('options must be an object');
+      throw new TypeError('Trigger options must be an object');
 
     this.type = type;
     this.name = name;
@@ -46,7 +54,6 @@ class Trigger {
 /**
  * Function used to check an Expectation against an emitted store trigger. No error wrapping is provided to allow throw() to fail tests immediately.
  * @callback customTest
- * @param {string} triggerType Type of the trigger (TRIGGER_TYPE_* constant)
  * @param {Trigger} received store trigger
  * @param {Trigger} expected store trigger
  * @param {Object.<Object>} store stub object
@@ -68,7 +75,7 @@ class Trigger {
  * A mutation or dispatch store event expectation
  * @typedef {Object} Expectation
  * @property {Trigger} t The Trigger expected
- * @property {customTest|void} [checkUsing] Function used to override default test approach
+ * @property {customTest|void} [check_function] Function used to override default test approach
  * @property {expectationCallback|void} [callback] Function to execute
  */
 
@@ -80,34 +87,29 @@ class Trigger {
  * @param {Expectation[]} [expectations] Store triggers that the action is expected to invoke
  * @param {Object|undefined} [actionPayload=undefined] Payload data sent to the action
  * @param {Object.<Object>} [store={state:{}, getters:{}, rootGetters:{}, rootState:{}}] Vuex store stub (object containing store subfields such as state, getters, etc)
- * @param {function} [checkUsing=CHECK_FUNCTION_toEqual] Function to use to check expectations. Can be one of the predefined CHECK_FUNCTION_* constants or a custom function (usually containing one or more JEST expect() chains). This function can be overwritten on a per-expectation basis by supplying a customTest property in the Expectation.
+ * @param {function} [check_function] Function to use to check expectations. Can be one of the predefined CHECK_FUNCTION_* constants or a custom function (usually containing one or more JEST expect() chains). This function can be overwritten on a per-expectation basis by supplying a customTest property in the Expectation.
  * @return {Promise<Error|*>}
  *
  * @export
  */
-const testAction = async (action, expectations, actionPayload = undefined, store = { state: {}, getters: {}, rootGetters: {}, rootState: {} }, checkUsing = CHECK_FUNCTION_toEqual) => {
-  try {
-    return await _testAction(
-        action, expectations, actionPayload, store, checkUsing
-    )
-  } catch (e) {
-    return e;
-  }
+const testAction = async (action, expectations, actionPayload = undefined, store = { state: {}, getters: {}, rootGetters: {}, rootState: {} }, check_function) => {
+  return evaluateAction(action, expectations, actionPayload, store)
+      .then(({checks, result}) => checkResults({checks, result, check_function}))
 };
 
 /**
+ * Run an action to produce its store triggers.
  * @param {function} action Action to call
  * @param {Expectation[]} [expectations] Store triggers that the action is expected to invoke
  * @param {Object|undefined} [actionPayload=undefined] Payload data sent to the action
  * @param {Object.<Object>} [store={state:{}, getters:{}, rootGetters:{}, rootState:{}}] Vuex store stub (object containing store subfields such as state, getters, etc)
- * @param {function} [checkUsing=CHECK_FUNCTION_toEqual] Function to use to check expectations. Can be one of the predefined CHECK_FUNCTION_* constants or a custom function (usually containing one or more JEST expect() chains). This function can be overwritten on a per-expectation basis by supplying a customTest property in the Expectation.
- * @return {Promise<*>}
+ * @return {Promise<Error|*>}
  *
  * @export
  */
-const _testAction = async (action, expectations, actionPayload = undefined, store = { state: {}, getters: {}, rootGetters: {}, rootState: {} }, checkUsing = CHECK_FUNCTION_toEqual) => {
+const evaluateAction = async (action, expectations, actionPayload = undefined, store = { state: {}, getters: {}, rootGetters: {}, rootState: {} }) => {
   let checks = [];
-  let result = [];
+  let result = null;
   let triggerIndex = 0;
 
   // Check that expectations have been specified properly
@@ -115,11 +117,11 @@ const _testAction = async (action, expectations, actionPayload = undefined, stor
     throw new TypeError(`expectations must be of array type (type provided: ${typeof expectations}).`);
   expectations = expectations.map((e, i) => {
     const trigger = e.t instanceof Trigger? e.t : new Trigger(e.t);
-      if(e.checkUsing && typeof e.checkUsing !== 'function')
-        throw new TypeError(`Unable to process expectation ${i}: checkUsing must be a function (type provided: ${typeof e.checkUsing}).`);
+      if(e.check_function && typeof e.check_function !== 'function')
+        throw new TypeError(`Unable to process expectation ${i}: check_function must be a function (type provided: ${typeof e.check_function}).`);
       if(e.callback && typeof e.callback !== 'function')
         throw new TypeError(`Unable to process expectation ${i}: callback must be a function (type provided: ${typeof e.callback}).`);
-      return {t: trigger, checkUsing: e.checkUsing, callback: e.callback};
+      return {t: trigger, check_function: e.check_function, callback: e.callback};
   });
 
   // Wrappers to add the trigger type to the check call
@@ -148,26 +150,35 @@ const _testAction = async (action, expectations, actionPayload = undefined, stor
 
     triggerIndex++;
 
-    const oldStore = store // TODO: deep copy
+    // Partially recopy store making sure that state variables are
+    // reinstanced rather than rereferenced.
+    // Objects in state variables will still be referenced, however.
+    const oldStore = {
+      ...store,
+      state: {...store.state},
+      rootState: {...store.rootState}
+    };
 
     // callback
     if(expected.callback)
-      expected.callback(received, expected, store)
+      await expected.callback(received, expected, store);
 
-    return checks.push({
-      type,
+    checks.push({
       received,
       expected: expected.t,
-      checkUsing: expected.checkUsing,
+      check_function: expected.check_function,
       oldStore
-    })
+    });
   };
 
   try {
     result = await action({ commit, dispatch, ...store }, actionPayload);
   } catch (e) {
-    console.error(`[ACTION '${action.name}' FAIL], \n ${e}`);
+    throw new Error(`[ACTION '${action.name}' FAIL] This could be due to an error in your store action code or in a callback supplied as part of your test.`);
   }
+
+  if(checks.length !== expectations.length)
+    throw new Error(`${action.name} triggered the wrong number of events. Expected ${expectations.length}, received ${checks.length}.`);
 
   return {checks, result};
 };
@@ -175,7 +186,6 @@ const _testAction = async (action, expectations, actionPayload = undefined, stor
 /**
  * Check that received and expected have the same type and name using toEqual() and check that payload serialises to the same string using toEqual().
  * @type customTest
- * @param type {string} Store trigger type
  * @param received {Trigger} The Trigger produced by the action
  * @param expected {Trigger} The Trigger expected
  * @param {Object.<Object>} [store] Store stub object
@@ -183,18 +193,19 @@ const _testAction = async (action, expectations, actionPayload = undefined, stor
  *
  * @export
  */
-const CHECK_FUNCTION_toEqual = (type, received, expected, store) => {
+const CHECK_FUNCTION_toEqual = (received, expected, store) => {
   expect(received.type).toEqual(expected.type);
   expect(received.name).toEqual(expected.name);
   if(expected.payload !== undefined)
     expect(JSON.stringify(received.payload))
         .toEqual(JSON.stringify(expected.payload));
+  expect(JSON.stringify(received.options))
+      .toEqual(JSON.stringify(expected.options));
 };
 
 /**
  * Check that received and expected have the same type and name using toEqual() and check that payload serialises to the same string using toEqual(). Errors are caught and printed in the console, so the check always passes.
  * @type customTest
- * @param type {string} Store trigger type
  * @param received {Trigger} The Trigger produced by the action
  * @param expected {Trigger} The Trigger expected
  * @param {Object.<Object>} [store] Store stub object
@@ -202,34 +213,53 @@ const CHECK_FUNCTION_toEqual = (type, received, expected, store) => {
  *
  * @export
  */
-const CHECK_FUNCTION_toEqual_permissive = (type, received, expected, store) => {
+const CHECK_FUNCTION_toEqual_permissive = (received, expected, store) => {
   try {
     expect(received.type).toEqual(expected.type);
     expect(received.name).toEqual(expected.name);
     if(expected.payload !== undefined)
       expect(JSON.stringify(received.payload))
           .toEqual(JSON.stringify(expected.payload));
+    expect(JSON.stringify(received.options))
+        .toEqual(JSON.stringify(expected.options));
   } catch (e) {
     console.error(`${received.type.toUpperCase()} '${received.name}' not as expected: \n ${e}`);
   }
 };
 
-let CHECK_FUNCTION = CHECK_FUNCTION_toEqual;
-
-const checkResults = ({checks, result}) => {
+/**
+ * Perform the checks for each of the registered checks, then return the result of the action.
+ * @param checks {{type: string, received: Trigger, expected: Trigger, store: Object.<Object>, check_function?: function}[]} List of checks to run
+ * @param result {*} Result of the action
+ * @callback [check_function] {customTest} Custom function used to check checks
+ * @return {*} Result of the action
+ */
+const checkResults = ({checks, result, check_function}) => {
   checks.forEach(c => {
-    if(c.checkUsing)
-      c.checkUsing(c.type, c.received, c.expected, c.store);
-    else
-      CHECK_FUNCTION(c.type, c.received, c.expected, c.store);
+    // Determine which function to use for checking
+    let f = options.check_function;
+    if(check_function)
+      f = check_function;
+    if(c.check_function)
+      f = c.check_function;
+
+    f(c.received, c.expected, c.store);
   });
   return result;
+};
+
+/**
+ * Hold the options for the module. These can be set by the user.
+ * @type {{check_function: customTest}}
+ */
+const options = {
+  check_function: CHECK_FUNCTION_toEqual
 };
 
 export {
   testAction,
   checkResults,
-  CHECK_FUNCTION,
+  options,
   CHECK_FUNCTION_toEqual,
   CHECK_FUNCTION_toEqual_permissive,
   TRIGGER_TYPE_MUTATION,
