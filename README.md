@@ -60,6 +60,8 @@ This is either a [mutation](https://vuex.vuejs.org/api/#commit) or a [dispatch](
 
 # 🔎 Example
 
+## Simple example
+
 ```javascript
 // user/actions.js
 
@@ -96,7 +98,11 @@ describe('getUser', () => {
     const user = { id: payload }
     userService.fetchUser = jest.fn().mockReturnValue({data: user})
     const expectations = [
+        // Each expectation can have a trigger (t), check_function, and callback. 
+        // Here they all just have t
         { 
+            // The first Trigger expected is the commit that 
+            // sets the loading flag to true
             t: {
                 type: TRIGGER_TYPE_MUTATION,
                 name: 'setLoading',
@@ -138,6 +144,111 @@ describe('getUser', () => {
 
 ```
 
+## Trigger callbacks
+
+```javascript
+// user/actions.js
+
+import userService from '../myUserService'
+
+// Function that interacts with the store
+export async function getUser ({ commit, getters }, userId) {
+  commit('setLoading', true)
+  try {
+    const { data } = await userService.fetchUser(userId)
+    commit('setUser', data)
+    // Here we fetch the user's data immediately, relying on
+    // the commit to have set the user properly.
+    // In the test, commit('setUser', data) will not actually do anything
+    // so we use a callback to mock up the effect.
+    if(getters('userAuthLevel') < 5)
+        throw new Error('Unauthorised')
+  } catch (e) {
+    commit('setNotificationError', true)
+  }
+  commit('setLoading', false)
+}
+```
+
+```javascript
+// user.spec.js
+
+import {
+    testAction,
+    TRIGGER_TYPE_MUTATION
+} from 'vue-test-actions'
+import * as actions from '~/store/user/actions'
+import userService from '~/services/myUserService'
+
+describe('getUser', () => {
+  test('If success', () => {
+    const payload = 1
+    const user = { id: payload }
+    userService.fetchUser = jest.fn().mockReturnValue({data: user})
+    const expectations = [
+        // Each expectation can have a trigger (t), check_function, and callback. 
+        // Here they all just have t
+        { 
+            // The first Trigger expected is the commit that 
+            // sets the loading flag to true
+            t: {
+                type: TRIGGER_TYPE_MUTATION,
+                name: 'setLoading',
+                payload: true
+                } 
+        },
+        { 
+            t: {
+                type: TRIGGER_TYPE_MUTATION,
+                name: 'setUser',
+                payload: user
+                },
+            callback: (received, expected, store) => store.state.userId = user 
+        },
+        { 
+            t: {
+                type: TRIGGER_TYPE_MUTATION,
+                name: 'setLoading',
+                payload: false
+                } 
+        }
+    ]
+
+    // We return the value because otherwise errors in promises
+    // will cause deprecated errors that will kill the nodeJS process.
+    // So either use
+    // `() => testAction(...)`
+    // or
+    // `() => { return testAction(...) }`
+    return testAction(actions.getUser, expectations, payload)
+  })
+})
+
+```
+
+## Custom test functions
+
+You can provide a custom function to test whether an expectation has been met.
+You can set your own default function for all tests by setting the package `option.check_function`.
+This is overridden by providing a `check_function` argument to the `testAction` function.
+Finally, you can override the test on a per-expectation basis by supplying `check_function` as a property of the expectation.
+
+```javascript
+import * as VTA from 'vue-test-actions'
+
+VTA.options.check_function = () => true // change package default
+
+// Supply a check_function argument to the testAction call
+testAction(actions.getUser, expectations, payload, store, () => true)
+
+const expectations = [
+    {
+        t: { type: VTA.TRIGGER_TYPE_MUTATION, name: 'foobar' },
+        check_function: () => true // supply as a property of an expectation
+    }   
+]
+```
+
 # ⚡ Gotchas
 
 The package allows you to provide callbacks that can (among other things) modify the store. 
@@ -165,14 +276,3 @@ If you like this project, You can support me with starring ⭐ this repository.
 
 Developed with ❤️ and ☕️ 
 
-
-# Version 2.0
-
-* **Revised test syntax** to ensure that failed tests fail and passed tests pass properly
-* **Collapse mutations and dispatches together** so the relative order matters, too
-* **Trigger tests are no longer wrapped for expectations by default**
-* Add support for custom test functions
-* Added small suite of frequently-used test functions
-* Add support for callbacks after store triggers are fired (e.g. to mock state updates that would be triggered)
-* Added jsdoc documentation to some code
-* Added tests for most functionality
