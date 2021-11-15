@@ -116,6 +116,8 @@ const evaluateAction = async (action, expectations, actionPayload = undefined, s
   if(expectations && !(expectations instanceof Array))
     throw new TypeError(`expectations must be of array type (type provided: ${typeof expectations}).`);
   expectations = expectations.map((e, i) => {
+    if(!e.t)
+      throw new Error('No property \'t\' present in Expectation (did you put the trigger properties directly in the expectation?).');
     const trigger = e.t instanceof Trigger? e.t : new Trigger(e.t);
       if(e.check_function && typeof e.check_function !== 'function')
         throw new TypeError(`Unable to process expectation ${i}: check_function must be a function (type provided: ${typeof e.check_function}).`);
