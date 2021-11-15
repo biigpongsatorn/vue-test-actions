@@ -161,16 +161,16 @@ const evaluateAction = async (action, expectations, actionPayload = undefined, s
       rootState: {...store.rootState}
     };
 
-    // callback
-    if(expected.callback)
-      await expected.callback(received, expected, store);
-
     checks.push({
       received,
       expected: expected.t,
       check_function: expected.check_function,
       oldStore
     });
+
+    // callback
+    if(expected.callback)
+      return await expected.callback(received, expected, store);
   };
 
   try {
