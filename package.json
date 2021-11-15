@@ -5,6 +5,7 @@
   "main": "build/index.js",
   "scripts": {
     "build": "babel src -d build",
+    "prepare": "babel src -d build",
     "test": "jest",
     "test:types": "tsc -p types/test"
   },
