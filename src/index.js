@@ -194,13 +194,7 @@ const evaluateAction = async (action, expectations, actionPayload = undefined, s
  * @export
  */
 const CHECK_FUNCTION_toEqual = (received, expected, store) => {
-  expect(received.name).toEqual(expected.name);
-  if(expected.payload !== undefined)
-    expect(JSON.stringify(received.payload))
-        .toEqual(JSON.stringify(expected.payload));
-  expect(JSON.stringify(received.options))
-      .toEqual(JSON.stringify(expected.options));
-  expect(received.type).toEqual(expected.type);
+  expect(received).toEqual(expected);
 };
 
 /**
@@ -215,13 +209,7 @@ const CHECK_FUNCTION_toEqual = (received, expected, store) => {
  */
 const CHECK_FUNCTION_toEqual_permissive = (received, expected, store) => {
   try {
-    expect(received.name).toEqual(expected.name);
-    if(expected.payload !== undefined)
-      expect(JSON.stringify(received.payload))
-          .toEqual(JSON.stringify(expected.payload));
-    expect(JSON.stringify(received.options))
-        .toEqual(JSON.stringify(expected.options));
-    expect(received.type).toEqual(expected.type);
+    expect(received).toEqual(expected);
   } catch (e) {
     console.error(`${received.type.toUpperCase()} '${received.name}' not as expected: \n ${e}`);
   }
