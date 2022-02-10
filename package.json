@@ -1,11 +1,12 @@
 {
   "name": "vue-test-actions",
-  "version": "1.0.6",
+  "version": "2.0.0",
   "description": "✅ Unit testing Vuex actions with Jest mocks.",
   "main": "build/index.js",
   "scripts": {
     "build": "babel src -d build",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "babel src -d build",
+    "test": "jest",
     "test:types": "tsc -p types/test"
   },
   "repository": {
@@ -21,6 +22,13 @@
     "mock"
   ],
   "author": "biig_pongsatorn <biig_pongsatorn@hotmail.com>",
+  "contributors": [
+    {
+      "name": "Matt Jaquiery",
+      "email": "matt@verysmalldreams.com",
+      "url": "https://github.com/mjaquiery/"
+    }
+  ],
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/biigpongsatorn/vue-test-actions/issues"

@@ -1,18 +1,18 @@
 import Vue from "vue";
 import VueX, { ActionContext } from "vuex";
-import testAction from "../index";
+import * as VTA from "../index";
 
 Vue.use(VueX);
 
 const actions = {
     increment(context: ActionContext<any, any>) {
         context.commit("increment");
-        context.commit('console')
+        context.dispatch('console', {msg: "hello"})
     },
-    console() {
-        console.log('hello');
+    console(context: ActionContext<any, any>, {msg}: {msg: string}) {
+        console.log(msg);
     }
-}
+};
 
 const store = new VueX.Store({
     state: {
@@ -28,9 +28,24 @@ const store = new VueX.Store({
 
 store.dispatch("increment");
 
-testAction(
+VTA.testAction(
     actions.increment,
-    [{ type: "increment", payload: undefined }],
-    [{ type: "console", payload: undefined }],
-    undefined
+    [
+        {
+            t: {
+                type: VTA.TRIGGER_TYPE_MUTATION,
+                name: "increment",
+                payload: undefined
+            }
+        },
+        {
+            t: {
+                type: VTA.TRIGGER_TYPE_DISPATCH,
+                name: "console",
+                payload: {msg: "hello"}
+            }
+        }
+    ],
+    undefined,
+    store
 );
